@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PaperForge — Research Paper to Code</title>
+  <meta name="description" content="Drop a research paper PDF and get a fully implemented, tested PyTorch codebase in minutes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #07070d;
+      --bg2:         #0e0e1a;
+      --bg3:         #16162a;
+      --violet:      #7c3aed;
+      --violet-glow: #9d5cf5;
+      --violet-dim:  #3d1a7a;
+      --cyan:        #06b6d4;
+      --cyan-dim:    #0e4a5e;
+      --green:       #10b981;
+      --red:         #ef4444;
+      --amber:       #f59e0b;
+      --txt:         #e2e8f0;
+      --txt-muted:   #64748b;
+      --txt-faint:   #334155;
+      --border:      rgba(124,58,237,.25);
+      --radius:      14px;
+      --shadow-v:    0 0 40px rgba(124,58,237,.25);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--txt);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Grid background ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(124,58,237,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,58,237,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* ── Orbs ── */
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(100px); pointer-events: none; z-index: 0;
+      animation: pulse 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 500px; height: 500px; background: rgba(124,58,237,.12); top: -150px; left: -150px; }
+    .orb-2 { width: 400px; height: 400px; background: rgba(6,182,212,.08); bottom: -100px; right: -100px; animation-delay: 4s; }
+    @keyframes pulse { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.08)} }
+
+    /* ── Layout ── */
+    .app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Header ── */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      background: rgba(7,7,13,.7);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.25rem; font-weight: 800; letter-spacing: -.02em;
+    }
+    .logo-icon { font-size: 1.5rem; }
+    .logo-text span { color: var(--violet-glow); }
+    .badge {
+      font-size: .65rem; font-weight: 600; letter-spacing: .08em;
+      padding: 3px 8px; border-radius: 999px;
+      background: var(--violet-dim); color: var(--violet-glow); text-transform: uppercase;
+    }
+
+    /* ── Main ── */
+    main {
+      flex: 1; display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 32px;
+      padding: 40px;
+      max-width: 1400px; margin: 0 auto; width: 100%;
+    }
+
+    /* ── Left panel ── */
+    .left-panel { display: flex; flex-direction: column; gap: 24px; }
+
+    /* ── Hero headline ── */
+    .hero { margin-bottom: 8px; }
+    .hero h1 {
+      font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.1;
+      letter-spacing: -.03em;
+      background: linear-gradient(135deg, #fff 0%, var(--violet-glow) 60%, var(--cyan) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p { margin-top: 10px; color: var(--txt-muted); font-size: 1rem; max-width: 480px; }
+
+    /* ── Drop Zone ── */
+    .drop-zone {
+      border: 2px dashed var(--violet);
+      border-radius: var(--radius);
+      padding: 60px 40px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(124,58,237,.04);
+      transition: all .25s ease;
+      position: relative; overflow: hidden;
+    }
+    .drop-zone::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(124,58,237,.08) 0%, transparent 70%);
+      opacity: 0; transition: opacity .3s;
+      pointer-events: none; z-index: 0;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--violet-glow);
+      background: rgba(124,58,237,.1);
+      box-shadow: var(--shadow-v);
+    }
+    .drop-zone:hover::before, .drop-zone.drag-over::before { opacity: 1; }
+
+    .drop-icon { font-size: 3.5rem; margin-bottom: 16px; display: block;
+      animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .drop-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 6px; }
+    .drop-sub { color: var(--txt-muted); font-size: .875rem; }
+    .drop-browse {
+      margin-top: 20px; display: inline-block;
+      padding: 10px 24px; border-radius: 999px;
+      background: var(--violet); color: #fff;
+      font-weight: 600; font-size: .875rem;
+      transition: background .2s, transform .15s;
+      cursor: pointer; border: none;
+    }
+    .drop-browse:hover { background: var(--violet-glow); transform: translateY(-1px); }
+    #file-input { display: none; }
+
+    .file-selected {
+      display: none; align-items: center; gap: 12px;
+      padding: 14px 20px; border-radius: var(--radius);
+      background: rgba(124,58,237,.12); border: 1px solid var(--border);
+      margin-top: 16px;
+    }
+    .file-selected.visible { display: flex; }
+    .file-icon { font-size: 1.5rem; }
+    .file-name { font-weight: 600; font-size: .9rem; }
+    .file-size { color: var(--txt-muted); font-size: .8rem; }
+
+    /* ── Run button ── */
+    .run-btn {
+      display: none; width: 100%; padding: 16px 32px;
+      background: linear-gradient(135deg, var(--violet) 0%, var(--cyan-dim) 100%);
+      border: none; border-radius: var(--radius);
+      color: #fff; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: all .2s; letter-spacing: .02em;
+      box-shadow: 0 4px 30px rgba(124,58,237,.3);
+    }
+    .run-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(124,58,237,.5); }
+    .run-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .run-btn.visible { display: block; }
+
+    /* ── Code Output ── */
+    .output-section { display: none; flex-direction: column; gap: 16px; }
+    .output-section.visible { display: flex; }
+
+    .output-header {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 1rem; font-weight: 700;
+    }
+    .output-status-badge {
+      padding: 4px 12px; border-radius: 999px;
+      font-size: .75rem; font-weight: 700; letter-spacing: .05em;
+    }
+    .output-status-badge.passed { background: rgba(16,185,129,.15); color: var(--green); }
+    .output-status-badge.failed { background: rgba(239,68,68,.15); color: var(--red); }
+    .output-status-badge.running { background: rgba(245,158,11,.15); color: var(--amber); }
+
+    .file-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .file-tab {
+      padding: 6px 14px; border-radius: 8px; cursor: pointer;
+      font-size: .8rem; font-weight: 500; font-family: 'JetBrains Mono', monospace;
+      background: var(--bg3); color: var(--txt-muted); border: 1px solid transparent;
+      transition: all .2s;
+    }
+    .file-tab.active { background: var(--violet-dim); color: var(--violet-glow); border-color: var(--border); }
+    .file-tab:hover:not(.active) { color: var(--txt); border-color: var(--border); }
+
+    .code-block {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: var(--bg3); border-bottom: 1px solid var(--border);
+    }
+    .code-filename { font-family: 'JetBrains Mono', monospace; font-size: .8rem; color: var(--txt-muted); }
+    .copy-btn {
+      padding: 4px 12px; border-radius: 6px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--txt-muted); font-size: .75rem; cursor: pointer;
+      transition: all .2s;
+    }
+    .copy-btn:hover { color: var(--txt); border-color: var(--violet); }
+    pre.code-content {
+      padding: 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+      font-size: .825rem; line-height: 1.7; max-height: 420px; overflow-y: auto;
+      color: #a5f3fc;
+    }
+
+    .pytest-output {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px 20px; font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem; line-height: 1.7; color: var(--green);
+      white-space: pre-wrap;
+    }
+    .pytest-output.error { color: var(--red); }
+
+    /* ── Right panel: Pipeline ── */
+    .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+    .pipeline-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .pipeline-title {
+      padding: 14px 20px; font-weight: 700; font-size: .9rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg3);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .pipeline-steps { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    .step {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 12px 14px; border-radius: 10px;
+      border: 1px solid transparent;
+      transition: all .3s;
+    }
+    .step.idle   { background: rgba(255,255,255,.02); }
+    .step.running{ background: rgba(245,158,11,.06); border-color: rgba(245,158,11,.2); }
+    .step.ok     { background: rgba(16,185,129,.06); border-color: rgba(16,185,129,.2); }
+    .step.failed { background: rgba(239,68,68,.06); border-color: rgba(239,68,68,.2); }
+
+    .step-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+      background: var(--bg3);
+    }
+    .step.running .step-icon { animation: spin-ring 1s linear infinite; }
+    @keyframes spin-ring { to { transform: rotate(360deg); } }
+    .step.ok     .step-icon { background: rgba(16,185,129,.2); }
+    .step.failed .step-icon { background: rgba(239,68,68,.2); }
+    .step.running .step-icon { background: rgba(245,158,11,.2); }
+
+    .step-body { flex: 1; }
+    .step-name { font-weight: 600; font-size: .875rem; }
+    .step-msg { font-size: .78rem; color: var(--txt-muted); margin-top: 3px; line-height: 1.4; }
+    .step-detail { font-size: .75rem; color: var(--txt-faint); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+    /* ── Paper info card ── */
+    .paper-info-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; display: none;
+    }
+    .paper-info-card.visible { display: block; }
+    .info-label { font-size: .75rem; font-weight: 600; color: var(--txt-muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .info-value { font-size: .9rem; font-weight: 600; }
+    .info-row { margin-bottom: 12px; }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-chip {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      background: var(--bg3); font-size: .75rem; margin: 2px;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--violet-dim); border-radius: 999px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      header { padding: 16px 20px; }
+      main { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">Paper<span>Forge</span></span>
+    </div>
+    <span class="badge">AI Research → Code</span>
+  </header>
+
+  <!-- Main -->
+  <main>
+    <!-- LEFT -->
+    <div class="left-panel">
+      <div class="hero">
+        <h1>Turn Research Into<br/>Working Code</h1>
+        <p>Drop any deep learning research paper PDF and PaperForge will extract the architecture, ground it with official API docs, and implement it as a tested PyTorch codebase.</p>
+      </div>
+
+      <!-- Drop Zone -->
+      <div class="drop-zone" id="drop-zone">
+        <span class="drop-icon">📄</span>
+        <div class="drop-title">Drag & Drop your Paper PDF here</div>
+        <div class="drop-sub">Supports any deep learning research paper</div>
+        <button class="drop-browse" onclick="document.getElementById('file-input').click()">Browse Files</button>
+        <input type="file" id="file-input" accept=".pdf" />
+      </div>
+
+      <!-- File selected -->
+      <div class="file-selected" id="file-selected">
+        <span class="file-icon">📕</span>
+        <div>
+          <div class="file-name" id="file-name-display">paper.pdf</div>
+          <div class="file-size" id="file-size-display">0 KB</div>
+        </div>
+      </div>
+
+      <!-- Run button -->
+      <button class="run-btn" id="run-btn" onclick="startForge()">
+        ⚡ Forge Implementation
+      </button>
+
+      <!-- Output Section -->
+      <div class="output-section" id="output-section">
+        <div class="output-header">
+          <span>Generated Code</span>
+          <span class="output-status-badge" id="output-status-badge">—</span>
+        </div>
+        <div class="file-tabs" id="file-tabs"></div>
+        <div class="code-block" id="code-block">
+          <div class="code-header">
+            <span class="code-filename" id="code-filename">—</span>
+            <button class="copy-btn" onclick="copyCode()">Copy</button>
+          </div>
+          <pre class="code-content" id="code-content">// Your generated code will appear here</pre>
+        </div>
+        <div>
+          <div class="info-label" style="margin-bottom:8px">Pytest Output</div>
+          <div class="pytest-output" id="pytest-output">Awaiting execution…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Pipeline tracker -->
+    <div class="right-panel">
+      <div class="pipeline-card">
+        <div class="pipeline-title">
+          🔄 Pipeline Progress
+        </div>
+        <div class="pipeline-steps" id="pipeline-steps">
+          <div class="step idle" id="step-upload">
+            <div class="step-icon">📥</div>
+            <div class="step-body">
+              <div class="step-name">Upload PDF</div>
+              <div class="step-msg">Waiting for file…</div>
+            </div>
+          </div>
+          <div class="step idle" id="step-understanding">
+            <div class="step-icon">🧠</div>
+            <div class="step-body">
+              <div class="step-name">Understand Paper</div>
+              <div class="step-msg">Extract architecture facts</div>
+            </div>
+          </div>
+          <div class="step idle" id="step-routing">
+            <div class="step-icon">🗺️</div>
+            <div class="step-body">
+              <div class="step-name">Ground Evidence</div>
+              <div class="step-msg">Query Knowledge + Research</div>
+            </div>
+          </div>
+          <div class="step idle" id="step-forge_code">
+            <div class="step-icon">⚙️</div>
+            <div class="step-body">
+              <div class="step-name">Generate Code</div>
+              <div class="step-msg">Plan → Generate → Review</div>
+            </div>
+          </div>
+          <div class="step idle" id="step-workspace">
+            <div class="step-icon">💾</div>
+            <div class="step-body">
+              <div class="step-name">Write Workspace</div>
+              <div class="step-msg">Materialize artifacts</div>
+            </div>
+          </div>
+          <div class="step idle" id="step-verification">
+            <div class="step-icon">✅</div>
+            <div class="step-body">
+              <div class="step-name">Verify &amp; Test</div>
+              <div class="step-msg">Syntax + Pytest</div>
+            </div>
+          </div>
+          <div class="step idle" id="step-complete">
+            <div class="step-icon">🏁</div>
+            <div class="step-body">
+              <div class="step-name">Complete</div>
+              <div class="step-msg">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paper info card -->
+      <div class="paper-info-card" id="paper-info-card">
+        <div class="info-label" style="margin-bottom:14px">📰 Extracted Paper Details</div>
+        <div class="info-row">
+          <div class="info-label">Title</div>
+          <div class="info-value" id="info-title">—</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Task</div>
+          <div class="info-value" id="info-task">—</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Model Components</div>
+          <div class="info-value" id="info-components">—</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">API References</div>
+          <div id="info-knowledge">—</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  let selectedFile = null;
+  let generatedFiles = {};
+  let activeTab = null;
+
+  // ── Drag & Drop ──
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.name.toLowerCase().endsWith('.pdf')) selectFile(f);
+    else alert('Please drop a PDF file.');
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) selectFile(fileInput.files[0]);
+  });
+  dropZone.addEventListener('click', (e) => {
+    if (e.target !== fileInput) fileInput.click();
+  });
+
+  function selectFile(f) {
+    selectedFile = f;
+    document.getElementById('file-name-display').textContent = f.name;
+    document.getElementById('file-size-display').textContent = (f.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('file-selected').classList.add('visible');
+    document.getElementById('run-btn').classList.add('visible');
+    document.getElementById('output-section').classList.remove('visible');
+    resetPipeline();
+  }
+
+  function resetPipeline() {
+    const stages = ['upload','understanding','routing','forge_code','workspace','verification','complete'];
+    stages.forEach(s => {
+      const el = document.getElementById('step-' + s);
+      if (!el) return;
+      el.className = 'step idle';
+      el.querySelector('.step-msg').textContent = getDefaultMsg(s);
+      const det = el.querySelector('.step-detail');
+      if (det) det.remove();
+    });
+    document.getElementById('paper-info-card').classList.remove('visible');
+    generatedFiles = {};
+    activeTab = null;
+  }
+
+  function getDefaultMsg(s) {
+    const msgs = {
+      upload: 'Waiting for file…',
+      understanding: 'Extract architecture facts',
+      routing: 'Query Knowledge + Research',
+      forge_code: 'Plan → Generate → Review',
+      workspace: 'Materialize artifacts',
+      verification: 'Syntax + Pytest',
+      complete: '—'
+    };
+    return msgs[s] || '';
+  }
+
+  function setStep(stage, status, message, detail) {
+    const el = document.getElementById('step-' + stage);
+    if (!el) return;
+    el.className = 'step ' + (status === 'ok' || status === 'passed' ? 'ok' : status === 'running' ? 'running' : status === 'error' || status === 'failed' ? 'failed' : 'idle');
+    el.querySelector('.step-msg').textContent = message || '';
+    let det = el.querySelector('.step-detail');
+    if (detail) {
+      if (!det) { det = document.createElement('div'); det.className = 'step-detail'; el.querySelector('.step-body').appendChild(det); }
+      det.textContent = detail;
+    }
+  }
+
+  // ── Forge ──
+  async function startForge() {
+    if (!selectedFile) return;
+    const btn = document.getElementById('run-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Forging…';
+    resetPipeline();
+    document.getElementById('output-section').classList.remove('visible');
+
+    const form = new FormData();
+    form.append('file', selectedFile);
+
+    try {
+      const res = await fetch('/forge', { method: 'POST', body: form });
+      if (!res.ok) throw new Error(await res.text());
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              handleEvent(JSON.parse(line.slice(6)));
+            } catch(e) {}
+          }
+        }
+      }
+    } catch(e) {
+      setStep('complete', 'failed', 'Connection error: ' + e.message);
+    }
+
+    btn.disabled = false;
+    btn.textContent = '⚡ Forge Implementation';
+  }
+
+  function handleEvent(ev) {
+    const { stage, status, message, detail } = ev;
+
+    if (stage === 'upload') {
+      setStep('upload', 'ok', message);
+      setStep('understanding', 'running', 'Analyzing paper with AI…');
+      return;
+    }
+
+    if (stage === 'understanding') {
+      if (status === 'running') { setStep('understanding', 'running', message); return; }
+      const d = detail || {};
+      setStep('understanding', 'ok', message, `${d.components || 0} components extracted`);
+      if (d.title) {
+        document.getElementById('info-title').textContent = d.title || '—';
+        document.getElementById('info-task').textContent = d.task || '—';
+        document.getElementById('info-components').textContent = d.components + ' module(s)';
+        document.getElementById('paper-info-card').classList.add('visible');
+      }
+      setStep('routing', 'running', 'Querying Knowledge + Research…');
+      return;
+    }
+
+    if (stage === 'routing') {
+      const d = detail || {};
+      setStep('routing', 'ok', message, `${d.knowledge_items || 0} API docs · ${d.research_items || 0} papers`);
+      if (d.knowledge_items) {
+        document.getElementById('info-knowledge').textContent = `${d.knowledge_items} official PyTorch docs retrieved`;
+      }
+      setStep('forge_code', 'running', 'Planning and generating code…');
+      return;
+    }
+
+    if (stage === 'forge_code') {
+      const d = detail || {};
+      const files = (d.files || []).join(', ');
+      setStep('forge_code', status === 'passed' || status === 'ok' ? 'ok' : 'failed', message,
+        `${d.review_rounds || 0} review round(s) · ${files}`);
+      if (status === 'passed') setStep('workspace', 'running', 'Writing files to disk…');
+      return;
+    }
+
+    if (stage === 'workspace') {
+      const d = detail || {};
+      setStep('workspace', 'ok', message, (d.files || []).join(', '));
+      setStep('verification', 'running', 'Running syntax + pytest…');
+      return;
+    }
+
+    if (stage === 'verification') {
+      const d = detail || {};
+      const passed = status === 'passed';
+      setStep('verification', passed ? 'ok' : 'failed', message,
+        `Syntax: ${d.syntax} · Pytest: ${d.pytest}`);
+      const pytestEl = document.getElementById('pytest-output');
+      if (d.pytest_output) {
+        pytestEl.textContent = d.pytest_output;
+        pytestEl.className = 'pytest-output' + (passed ? '' : ' error');
+      } else if (d.pytest_error) {
+        pytestEl.textContent = d.pytest_error;
+        pytestEl.className = 'pytest-output error';
+      }
+      return;
+    }
+
+    if (stage === 'complete') {
+      const d = detail || {};
+      const passed = d.final_status === 'passed';
+      setStep('complete', passed ? 'ok' : 'failed',
+        passed ? `Project: ${d.project_name}` : 'Pipeline ended with issues');
+
+      const badge = document.getElementById('output-status-badge');
+      badge.textContent = passed ? 'PASSED' : 'FAILED';
+      badge.className = 'output-status-badge ' + (passed ? 'passed' : 'failed');
+
+      generatedFiles = d.generated_files || {};
+      renderFileTabs();
+      document.getElementById('output-section').classList.add('visible');
+      return;
+    }
+
+    if (stage === 'error') {
+      setStep('complete', 'failed', 'Error: ' + message);
+    }
+  }
+
+  function renderFileTabs() {
+    const tabs = document.getElementById('file-tabs');
+    tabs.innerHTML = '';
+    Object.keys(generatedFiles).forEach((name, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'file-tab' + (i === 0 ? ' active' : '');
+      btn.textContent = name;
+      btn.onclick = () => showTab(name);
+      tabs.appendChild(btn);
+    });
+    if (Object.keys(generatedFiles).length > 0) showTab(Object.keys(generatedFiles)[0]);
+  }
+
+  function showTab(name) {
+    activeTab = name;
+    document.querySelectorAll('.file-tab').forEach(t => {
+      t.classList.toggle('active', t.textContent === name);
+    });
+    document.getElementById('code-filename').textContent = name;
+    document.getElementById('code-content').textContent = generatedFiles[name] || '';
+  }
+
+  function copyCode() {
+    const code = document.getElementById('code-content').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+</script>
+</body>
+</html>

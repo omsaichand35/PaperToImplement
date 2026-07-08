@@ -1,0 +1,300 @@
+{
+  "paper_title": null,
+  "task": null,
+  "model_components": [
+    {
+      "name": "Convolutional Layer 1",
+      "component_type": "Convolutional",
+      "facts": [
+        {
+          "name": "kernel_size",
+          "value": "11",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "96 convolutional kernels of size 11×11×3 learned by the ﬁrst convolutional layer"
+            }
+          ],
+          "notes": null
+        },
+        {
+          "name": "num_kernels",
+          "value": "96",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "96 convolutional kernels of size 11×11×3 learned by the ﬁrst convolutional layer"
+            }
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "name": "Convolutional Layer 2",
+      "component_type": "Convolutional",
+      "facts": [
+        {
+          "name": "kernel_size",
+          "value": "5",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The second convolutional layer takes as input the (response-normalized and pooled) output of the ﬁrst convolutional layer and ﬁlters it with 256 kernels of size 5 × 5 × 48."
+            }
+          ],
+          "notes": null
+        },
+        {
+          "name": "num_kernels",
+          "value": "256",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The second convolutional layer takes as input the (response-normalized and pooled) output of the ﬁrst convolutional layer and ﬁlters it with 256 kernels of size 5 × 5 × 48."
+            }
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "name": "Convolutional Layer 3",
+      "component_type": "Convolutional",
+      "facts": [
+        {
+          "name": "kernel_size",
+          "value": "3",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The third convolutional layer has 384 kernels of size 3 × 3 × 256 connected to the (normalized, pooled) outputs of the second convolutional layer."
+            }
+          ],
+          "notes": null
+        },
+        {
+          "name": "num_kernels",
+          "value": "384",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The third convolutional layer has 384 kernels of size 3 × 3 × 256 connected to the (normalized, pooled) outputs of the second convolutional layer."
+            }
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "name": "Convolutional Layer 4",
+      "component_type": "Convolutional",
+      "facts": [
+        {
+          "name": "kernel_size",
+          "value": "3",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The fourth convolutional layer has 384 kernels of size 3 × 3 × 192"
+            }
+          ],
+          "notes": null
+        },
+        {
+          "name": "num_kernels",
+          "value": "384",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The fourth convolutional layer has 384 kernels of size 3 × 3 × 192"
+            }
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "name": "Convolutional Layer 5",
+      "component_type": "Convolutional",
+      "facts": [
+        {
+          "name": "kernel_size",
+          "value": "3",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The ﬁfth convolutional layer has 256 kernels of size 3 × 3 × 192"
+            }
+          ],
+          "notes": null
+        },
+        {
+          "name": "num_kernels",
+          "value": "256",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The ﬁfth convolutional layer has 256 kernels of size 3 × 3 × 192"
+            }
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "name": "Fully Connected Layer 1",
+      "component_type": "Fully Connected",
+      "facts": [
+        {
+          "name": "num_neurons",
+          "value": "4096",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The fully-connected layers have 4096 neurons each."
+            }
+          ],
+          "notes": null
+        }
+      ]
+    },
+    {
+      "name": "Fully Connected Layer 2",
+      "component_type": "Fully Connected",
+      "facts": [
+        {
+          "name": "num_neurons",
+          "value": "4096",
+          "status": "PAPER_REPORTED",
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 5,
+              "section": null,
+              "quote": "The fully-connected layers have 4096 neurons each."
+            }
+          ],
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "preprocessing": [
+    {
+      "name": "Data Augmentation",
+      "value": "Image translations and horizontal reflections, altering RGB channel intensities",
+      "status": "PAPER_REPORTED",
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "page": 5,
+          "section": null,
+          "quote": "We employ two distinct forms of data augmentation, both of which allow transformed images to be produced from the original images with very little computation"
+        }
+      ],
+      "notes": null
+    }
+  ],
+  "training": [
+    {
+      "name": "Batch Size",
+      "value": "128",
+      "status": "PAPER_REPORTED",
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "page": 6,
+          "section": null,
+          "quote": "We trained our models using stochastic gradient descent with a batch size of 128 examples"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "Momentum",
+      "value": "0.9",
+      "status": "PAPER_REPORTED",
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "page": 6,
+          "section": null,
+          "quote": "We trained our models using stochastic gradient descent with a batch size of 128 examples, momentum of 0.9"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "Weight Decay",
+      "value": "0.0005",
+      "status": "PAPER_REPORTED",
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "page": 6,
+          "section": null,
+          "quote": "We trained our models using stochastic gradient descent with a batch size of 128 examples, momentum of 0.9, and weight decay of 0.0005"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "Learning Rate",
+      "value": "0.01",
+      "status": "PAPER_REPORTED",
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "page": 6,
+          "section": null,
+          "quote": "The learning rate was initialized at 0.01 and reduced three times prior to termination"
+        }
+      ],
+      "notes": null
+    }
+  ],
+  "unknowns": [
+    {
+      "name": "model architecture",
+      "value": null,
+      "status": "UNKNOWN",
+      "confidence": 0.5,
+      "evidence": [],
+      "notes": "No information about model architecture is provided in this chunk."
+    }
+  ]
+}

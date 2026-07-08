@@ -1,0 +1,107 @@
+[
+  {
+    "id": "torch_nn_conv1d",
+    "symbol": "torch.nn.Conv1d",
+    "title": "Conv1d",
+    "signature": "class torch.nn.Conv1d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)",
+    "description": "Applies a 1D convolution over an input signal composed of several input planes.",
+    "parameters": {
+      "in_channels": "Number of channels in the input image",
+      "out_channels": "Number of channels produced by the convolution",
+      "kernel_size": "Size of the convolving kernel",
+      "stride": "Stride of the convolution. Default: 1",
+      "padding": "Padding added to both sides of the input. Default: 0",
+      "dilation": "Spacing between kernel elements. Default: 1",
+      "groups": "Number of blocked connections from input channels to output channels. Default: 1",
+      "bias": "If True , adds a learnable bias to the output. Default: True",
+      "padding_mode": "'zeros' , 'reflect' , 'replicate' or 'circular' . Default: 'zeros'"
+    },
+    "source": {
+      "type": "official_pytorch_docs",
+      "url": "https://docs.pytorch.org/docs/2.12/generated/torch.nn.Conv1d.html",
+      "version": "2.12"
+    }
+  },
+  {
+    "id": "torch_nn_convtranspose1d",
+    "symbol": "torch.nn.ConvTranspose1d",
+    "title": "ConvTranspose1d",
+    "signature": "class torch.nn.ConvTranspose1d(in_channels, out_channels, kernel_size, stride=1, padding=0, output_padding=0, groups=1, bias=True, dilation=1, padding_mode='zeros', device=None, dtype=None)",
+    "description": "Applies a 1D transposed convolution operator over an input image composed of several input planes.",
+    "parameters": {
+      "in_channels": "Number of channels in the input image",
+      "out_channels": "Number of channels produced by the convolution",
+      "kernel_size": "Size of the convolving kernel",
+      "stride": "Stride of the convolution. Default: 1",
+      "padding": "dilation * (kernel_size - 1) - padding zero-padding will be added to both sides of the input. Default: 0",
+      "output_padding": "Additional size added to one side of the output shape. Default: 0",
+      "groups": "Number of blocked connections from input channels to output channels. Default: 1",
+      "bias": "If True , adds a learnable bias to the output. Default: True",
+      "dilation": "Spacing between kernel elements. Default: 1"
+    },
+    "source": {
+      "type": "official_pytorch_docs",
+      "url": "https://docs.pytorch.org/docs/2.12/generated/torch.nn.ConvTranspose1d.html",
+      "version": "2.12"
+    }
+  },
+  {
+    "id": "torch_nn_linear",
+    "symbol": "torch.nn.Linear",
+    "title": "Linear",
+    "signature": "class torch.nn.Linear(in_features, out_features, bias=True, device=None, dtype=None)",
+    "description": "Applies an affine linear transformation to the incoming data: y = x A T + b y = xA^T + b y = x A T + b .",
+    "parameters": {
+      "in_features": "size of each input sample",
+      "out_features": "size of each output sample",
+      "bias": "If set to False , the layer will not learn an additive bias. Default: True"
+    },
+    "source": {
+      "type": "official_pytorch_docs",
+      "url": "https://docs.pytorch.org/docs/2.12/generated/torch.nn.Linear.html",
+      "version": "2.12"
+    }
+  },
+  {
+    "id": "torch_nn_lstm",
+    "symbol": "torch.nn.LSTM",
+    "title": "LSTM",
+    "signature": "class torch.nn.LSTM(input_size, hidden_size, num_layers=1, bias=True, batch_first=False, dropout=0.0, bidirectional=False, proj_size=0, device=None, dtype=None)",
+    "description": "Apply a multi-layer long short-term memory (LSTM) RNN to an input sequence.",
+    "parameters": {
+      "input_size": "The number of expected features in the input x",
+      "hidden_size": "The number of features in the hidden state h",
+      "num_layers": "Number of recurrent layers. E.g., setting num_layers=2 would mean stacking two LSTMs together to form a stacked LSTM , with the second LSTM taking in outputs of the first LSTM and computing the final results. Default: 1",
+      "bias": "If False , then the layer does not use bias weights b_ih and b_hh . Default: True",
+      "batch_first": "If True , then the input and output tensors are provided as (batch, seq, feature) instead of (seq, batch, feature) . Note that this does not apply to hidden or cell states. See the Inputs/Outputs sections below for details. Default: False",
+      "dropout": "If non-zero, introduces a Dropout layer on the outputs of each LSTM layer except the last layer, with dropout probability equal to dropout . Default: 0",
+      "bidirectional": "If True , becomes a bidirectional LSTM. Default: False",
+      "proj_size": "If > 0 , will use LSTM with projections of corresponding size. Default: 0"
+    },
+    "source": {
+      "type": "official_pytorch_docs",
+      "url": "https://docs.pytorch.org/docs/2.12/generated/torch.nn.LSTM.html",
+      "version": "2.12"
+    }
+  },
+  {
+    "id": "torch_nn_batchnorm1d",
+    "symbol": "torch.nn.BatchNorm1d",
+    "title": "BatchNorm1d",
+    "signature": "class torch.nn.BatchNorm1d(num_features, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True, device=None, dtype=None, *, bias=True)",
+    "description": "Applies Batch Normalization over a 2D or 3D input.",
+    "parameters": {
+      "num_features": "number of features or channels C C C of the input",
+      "eps": "a value added to the denominator for numerical stability. Default: 1e-5",
+      "momentum": "the value used for the running_mean and running_var computation. Can be set to None for cumulative moving average (i.e. simple average). Default: 0.1",
+      "affine": "a boolean value that when set to True , this module has learnable affine parameters. Default: True",
+      "track_running_stats": "a boolean value that when set to True , this module tracks the running mean and variance, and when set to False , this module does not track such statistics, and initializes statistics buffers running_mean and running_var as None . When these buffers are None , this module always uses batch statistics. in both training and eval modes. Default: True",
+      "bias": "If set to False , the layer will not learn an additive bias (only relevant if affine is True ). Default: True"
+    },
+    "source": {
+      "type": "official_pytorch_docs",
+      "url": "https://docs.pytorch.org/docs/2.12/generated/torch.nn.BatchNorm1d.html",
+      "version": "2.12"
+    }
+  }
+]

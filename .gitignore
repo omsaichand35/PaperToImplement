@@ -1,0 +1,12 @@
+.env
+.agents
+.idea
+.pytest_cache
+.venv
+.vs
+.vscode
+list_models.py
+sdlc.py
+test_stream.py
+paperforge_env.py
+__pycache__
