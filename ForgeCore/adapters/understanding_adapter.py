@@ -17,10 +17,51 @@ class UnderstandingAdapter:
         )
 
 
-def spec_from_understanding(spec_obj: Any) -> str:
+def spec_dict_from_understanding(spec_obj: Any) -> dict:
+    """
+    Return the raw ImplementationSpec as a plain dict (lossless).
+    This is what ForgeCode receives instead of the Markdown rendering.
+    """
+    if hasattr(spec_obj, "model_dump"):
+        return spec_obj.model_dump()
+    if isinstance(spec_obj, dict):
+        return spec_obj
+    return {}
+
+
+def _fact_req_prefix(fact: dict[str, Any]) -> str:
+    req = fact.get("required")
+    if req is True or (isinstance(req, str) and req.lower() == "true"):
+        return "[REQUIRED] "
+    return "[OPTIONAL] "
+
+
+def _format_component_hierarchy_lines(components: list[Any], indent: str = "") -> list[str]:
+    lines = []
+    for idx, comp in enumerate(components):
+        if isinstance(comp, dict):
+            name = comp.get("name") or comp.get("id") or "Component"
+            repeat = comp.get("repeat_count")
+            subs = comp.get("subcomponents", [])
+        else:
+            name = getattr(comp, "name", "") or getattr(comp, "id", "Component")
+            repeat = getattr(comp, "repeat_count", None)
+            subs = getattr(comp, "subcomponents", [])
+        suffix = f" × {repeat}" if repeat and str(repeat) not in ("1", "None") else ""
+        prefix = "└── " if idx == len(components) - 1 else "├── "
+        lines.append(f"{indent}{prefix}{name}{suffix}")
+        if subs:
+            next_indent = indent + ("    " if idx == len(components) - 1 else "│   ")
+            lines.extend(_format_component_hierarchy_lines(subs, next_indent))
+    return lines
+
+
+def spec_from_understanding(spec_obj: Any, target_file: str | None = None) -> str:
     """
     Convert a PaperUnderstanding ImplementationSpec into a clean, structured
     specification string suitable for ForgeCore / ForgeCode.
+    If target_file is specified (e.g. 'models.py'), outputs only the relevant
+    sub-spec (ArchitectureSpec) so the generator is not distracted.
     """
     if hasattr(spec_obj, "model_dump"):
         data = spec_obj.model_dump()
@@ -62,7 +103,7 @@ def spec_from_understanding(spec_obj: Any) -> str:
             val_str = f": {f_val}" if f_val is not None else ""
             note_str = f" ({f_notes})" if f_notes else ""
             status_str = f" [{f_status}]" if f_status else ""
-            lines.append(f"- {f_name}{val_str}{note_str}{status_str}")
+            lines.append(f"- {_fact_req_prefix(fact)}{f_name}{val_str}{note_str}{status_str}")
             # Include direct quotes as implementation evidence
             for ev in f_evidence:
                 quote = ev.get("quote")
@@ -70,6 +111,125 @@ def spec_from_understanding(spec_obj: Any) -> str:
                 if quote:
                     lines.append(f"  > Paper p.{page}: \"{quote}\"")
         lines.append("")
+
+    has_hierarchy = any(
+        (comp.get("subcomponents") if isinstance(comp, dict) else getattr(comp, "subcomponents", None))
+        for comp in components
+    )
+    if has_hierarchy:
+        lines.append("## Component Hierarchy")
+        lines.extend(_format_component_hierarchy_lines(components))
+        lines.append("")
+
+    topological_order = []
+    if hasattr(spec_obj, "get_topological_generation_order"):
+        topological_order = spec_obj.get_topological_generation_order()
+    elif any((comp.get("dependencies") if isinstance(comp, dict) else getattr(comp, "dependencies", None)) for comp in components):
+        topological_order = components
+    if topological_order:
+        lines.append("## Topological Generation Order (Dependency Graph)")
+        lines.append("Generate model components in this deterministic bottom-up dependency order:")
+        for idx, comp in enumerate(topological_order, 1):
+            cname = comp.get("name") if isinstance(comp, dict) else getattr(comp, "name", "Component")
+            lines.append(f"{idx}. {cname}")
+        lines.append("")
+
+    arch_graph = data.get("architecture_graph") or data.get("architecture") or {}
+    nodes = arch_graph.get("nodes", [])
+    edges = arch_graph.get("edges", [])
+    tensors = arch_graph.get("tensors", [])
+    branches = arch_graph.get("branches", [])
+    skips = arch_graph.get("skips", [])
+    residuals = arch_graph.get("residuals", [])
+    src_type = arch_graph.get("primary_topology_source", "TEXT")
+
+    if nodes or edges or tensors or branches or skips or residuals:
+        lines.append("## Architecture Graph Topology")
+        if src_type == "FIGURE":
+            lines.append("Primary Topology Source: FIGURE (Visual Figure Diagram — authoritative source for arrows, branches, skip connections, and residuals)")
+        if nodes:
+            lines.append("### Nodes")
+            for n in nodes:
+                n_id = n.get("id") or n.get("name") or "node"
+                n_type = n.get("type") or n.get("component_type") or "Unknown"
+                lines.append(f"- {n_id}: {n_type}")
+        if edges:
+            lines.append("### Edges")
+            for e in edges:
+                from_n = e.get("from") or e.get("from_node") or e.get("source") or "?"
+                to_n = e.get("to") or e.get("to_node") or e.get("target") or "?"
+                lines.append(f"- {from_n} -> {to_n}")
+        if tensors:
+            lines.append("### Tensors")
+            for t in tensors:
+                t_name = t.get("name") or t.get("id") or "tensor"
+                lines.append(f"- {t_name}")
+        if branches:
+            lines.append("### Branches")
+            for b in branches:
+                lines.append(f"- {b}")
+        if skips:
+            lines.append("### Skip Connections")
+            for s in skips:
+                lines.append(f"- {s}")
+        if residuals:
+            lines.append("### Residual Connections")
+            for r in residuals:
+                lines.append(f"- {r}")
+        lines.append("")
+
+    fps = data.get("forward_pass") or arch_graph.get("forward_pass") or []
+    if fps:
+        lines.append("## Forward Pass Contract (Execution Graph)")
+        lines.append("Code generation MUST follow this exact forward pass execution order instead of guessing:")
+        for step in fps:
+            if isinstance(step, dict):
+                s_num = step.get("step", 1)
+                op = step.get("operation", "layer")
+                inp = step.get("input", "x")
+                out = step.get("output", "out")
+                cons = step.get("consumer_operation")
+            else:
+                s_num = getattr(step, "step", 1)
+                op = getattr(step, "operation", "layer")
+                inp = getattr(step, "input", "x")
+                out = getattr(step, "output", "out")
+                cons = getattr(step, "consumer_operation", None)
+            cons_str = f" -> Consumer: {cons}" if cons else ""
+            cons_json = f', "consumer_operation": "{cons}"' if cons else ""
+            lines.append(f"- Step {s_num}: {out} = self.{op}({inp})  (Input: {inp} -> Operation: {op} -> Output: {out}{cons_str})  [JSON: {{\"step\": {s_num}, \"operation\": \"{op}\", \"input\": \"{inp}\", \"output\": \"{out}\"{cons_json}}}]")
+        lines.append("")
+
+    tf = data.get("tensor_flow")
+    if not tf and isinstance(arch_graph, dict):
+        tf = arch_graph.get("tensor_flow")
+    elif not tf and hasattr(arch_graph, "get_tensor_flow_chain"):
+        tf = arch_graph.get_tensor_flow_chain()
+    if tf:
+        lines.append("## Preserved Tensor Flow (Architecture)")
+        lines.append("The tensor flow IS the architecture. Do NOT merely list static components.")
+        lines.append(f"Directed tensor flow chain:\n{tf}")
+        lines.append("")
+
+    eqs = data.get("equations", [])
+    if eqs:
+        lines.append("## Executable Equation Operations")
+        lines.append("Code generation MUST implement these deterministic mathematical formulas for model operations:")
+        for eq in eqs:
+            if isinstance(eq, dict):
+                op = eq.get("operation", "operation")
+                formula = eq.get("formula", "")
+            else:
+                op = getattr(eq, "operation", "operation")
+                formula = getattr(eq, "formula", str(eq))
+            lines.append(f"- operation: {op}")
+            lines.append(f"  formula: {formula}")
+            lines.append(f"  [JSON: {{\"operation\": \"{op}\", \"formula\": \"{formula}\"}}]")
+        lines.append("")
+
+    is_architecture_only = bool(target_file and (target_file.endswith("models.py") or target_file.endswith("test_model.py")))
+    if is_architecture_only:
+        return "\n".join(lines)
 
     prep = data.get("preprocessing", [])
     if prep:
@@ -82,7 +242,7 @@ def spec_from_understanding(spec_obj: Any) -> str:
             val_str = f": {f_val}" if f_val is not None else ""
             provenance = _PROVENANCE_LABELS.get(f_status, "")
             prov_str = f" *({provenance})*" if provenance else ""
-            lines.append(f"- {f_name}{val_str}{prov_str}")
+            lines.append(f"- {_fact_req_prefix(fact)}{f_name}{val_str}{prov_str}")
             for ev in fact.get("evidence", []):
                 quote = ev.get("quote")
                 page = ev.get("page")
@@ -104,7 +264,7 @@ def spec_from_understanding(spec_obj: Any) -> str:
             val_str = f": {f_val}" if f_val is not None else ""
             provenance = _PROVENANCE_LABELS.get(f_status, "")
             prov_str = f" *({provenance})*" if provenance else ""
-            lines.append(f"- {f_name}{val_str}{prov_str}")
+            lines.append(f"- {_fact_req_prefix(fact)}{f_name}{val_str}{prov_str}")
             for ev in fact.get("evidence", []):
                 quote = ev.get("quote")
                 page = ev.get("page")

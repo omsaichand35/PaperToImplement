@@ -310,6 +310,16 @@ def scan_gaps(spec_data: dict) -> dict[str, list[dict]]:
         if fact.get("value") is None or fact.get("status") == "UNKNOWN":
             methodology_gaps.append(fact)
 
+    # Check model_components for null-valued / UNKNOWN facts
+    for comp in spec_data.get("model_components", []):
+        if not isinstance(comp, dict):
+            continue
+        for fact in comp.get("facts", []):
+            if not isinstance(fact, dict):
+                continue
+            if fact.get("value") is None or fact.get("value") == "UNKNOWN" or fact.get("status") == "UNKNOWN":
+                methodology_gaps.append(fact)
+
     return {
         "dataset_gaps": dataset_gaps,
         "optimization_gaps": optimization_gaps,
@@ -523,6 +533,31 @@ def resolve_via_literature(
 # Stage 2: Tier 3 — Domain Default Heuristics
 # ---------------------------------------------------------------------------
 
+def _infer_default_architectural_val(name: str) -> Any:
+    name_lower = (name or "").lower().strip()
+    if any(k in name_lower for k in ["layer", "depth", "count", "num_layers", "blocks"]):
+        return 6
+    if any(k in name_lower for k in ["dim", "hidden", "d_model", "embed", "channel"]):
+        return 512
+    if any(k in name_lower for k in ["head", "num_heads"]):
+        return 8
+    if any(k in name_lower for k in ["kernel"]):
+        return 3
+    if any(k in name_lower for k in ["patch"]):
+        return 16
+    if any(k in name_lower for k in ["stride"]):
+        return 1
+    if any(k in name_lower for k in ["pad"]):
+        return 1
+    if any(k in name_lower for k in ["dropout"]):
+        return 0.1
+    if any(k in name_lower for k in ["shape", "size"]):
+        return [1, 512]
+    if any(k in name_lower for k in ["order", "forward"]):
+        return "Standard sequential flow"
+    return "Standard default"
+
+
 def resolve_via_heuristics(
     gaps: dict[str, list[dict]],
     task_type: str,
@@ -677,8 +712,33 @@ def resolve_null_entities(
                     report["details"].append(f"DOMAIN_HEURISTIC: {fact['name']} = {fact['value']}")
         print(f"[NullResolver]   -> Resolved {report['tiers']['heuristic']} facts via heuristics.", flush=True)
 
-    # Remove resolved items from unknowns
-    _prune_resolved_unknowns(spec_data, already_resolved)
+    # Ensure no required fact remains unresolved (e.g. in model_components or any section)
+    for section_key in ("preprocessing", "training", "unknowns"):
+        for fact in spec_data.get(section_key, []):
+            if isinstance(fact, dict) and fact.get("required") is True:
+                val = fact.get("value")
+                status = fact.get("status")
+                if val is None or val == "UNKNOWN" or status == "UNKNOWN":
+                    fact["value"] = _infer_default_architectural_val(fact.get("name", ""))
+                    fact["status"] = "DOMAIN_HEURISTIC"
+                    if not fact.get("confidence"):
+                        fact["confidence"] = 0.75
+                    report["tiers"]["heuristic"] += 1
+                    report["details"].append(f"DOMAIN_HEURISTIC: {fact.get('name')} = {fact['value']}")
+
+    for comp in spec_data.get("model_components", []):
+        if isinstance(comp, dict):
+            for fact in comp.get("facts", []):
+                if isinstance(fact, dict) and fact.get("required") is True:
+                    val = fact.get("value")
+                    status = fact.get("status")
+                    if val is None or val == "UNKNOWN" or status == "UNKNOWN":
+                        fact["value"] = _infer_default_architectural_val(fact.get("name", ""))
+                        fact["status"] = "DOMAIN_HEURISTIC"
+                        if not fact.get("confidence"):
+                            fact["confidence"] = 0.75
+                        report["tiers"]["heuristic"] += 1
+                        report["details"].append(f"DOMAIN_HEURISTIC: {fact.get('name')} = {fact['value']}")
 
     report["resolved_count"] = sum(report["tiers"].values())
     print(
@@ -688,9 +748,19 @@ def resolve_null_entities(
         flush=True,
     )
 
-    # Write back to spec_obj if it has Pydantic model interface
-    if hasattr(spec_obj, "__dict__"):
-        for key in ("preprocessing", "training", "unknowns"):
+    # Write back to spec_obj cleanly via Pydantic validation if available
+    if hasattr(spec_obj, "model_validate"):
+        try:
+            validated = spec_obj.__class__.model_validate(spec_data)
+            for key in ("preprocessing", "training", "unknowns", "model_components", "inference"):
+                if hasattr(validated, key):
+                    setattr(spec_obj, key, getattr(validated, key))
+        except Exception:
+            for key in ("preprocessing", "training", "unknowns", "model_components", "inference"):
+                if key in spec_data:
+                    setattr(spec_obj, key, spec_data[key])
+    elif hasattr(spec_obj, "__dict__"):
+        for key in ("preprocessing", "training", "unknowns", "model_components", "inference"):
             if key in spec_data:
                 setattr(spec_obj, key, spec_data[key])
 

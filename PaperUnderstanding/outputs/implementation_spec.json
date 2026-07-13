@@ -1,229 +1,1258 @@
 {
+  "schema_version": "2.0",
   "paper_title": null,
   "task": null,
   "model_components": [
     {
-      "name": "Convolutional Layer 1",
-      "component_type": "Convolutional",
+      "id": "pointdit",
+      "name": "PointDiT",
+      "component_type": "Diffusion Transformer",
+      "role": "MODEL",
+      "parent_id": null,
+      "variant": null,
+      "inputs": [],
+      "outputs": [],
+      "operations": [],
+      "repeat_count": null,
       "facts": [
         {
-          "name": "kernel_size",
-          "value": "11",
+          "name": "model_architecture",
+          "value": "Vision Transformer (ViT)",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "Vision Transformer (ViT)",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "ARCHITECTURE",
           "status": "PAPER_REPORTED",
+          "required": true,
           "confidence": 1.0,
           "evidence": [
             {
-              "page": 5,
-              "section": null,
-              "quote": "96 convolutional kernels of size 11×11×3 learned by the ﬁrst convolutional layer"
+              "page": 1,
+              "section": "Introduction",
+              "quote": "We introduce a minimalist pixel-space Diffusion Transformer, built on a plain ViT, that operates directly on raw 3D point map patches and is conditioned on image tokens from a pre-trained DINOv3.",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
             }
           ],
           "notes": null
         },
         {
-          "name": "num_kernels",
-          "value": "96",
+          "name": "input_shape",
+          "value": "[H, W, 3]",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "[H, W, 3]",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "SHAPE",
           "status": "PAPER_REPORTED",
+          "required": true,
           "confidence": 1.0,
           "evidence": [
             {
-              "page": 5,
-              "section": null,
-              "quote": "96 convolutional kernels of size 11×11×3 learned by the ﬁrst convolutional layer"
-            }
-          ],
-          "notes": null
-        }
-      ]
-    },
-    {
-      "name": "Convolutional Layer 2",
-      "component_type": "Convolutional",
-      "facts": [
-        {
-          "name": "kernel_size",
-          "value": "5",
-          "status": "PAPER_REPORTED",
-          "confidence": 1.0,
-          "evidence": [
-            {
-              "page": 5,
-              "section": null,
-              "quote": "The second convolutional layer takes as input the (response-normalized and pooled) output of the ﬁrst convolutional layer and ﬁlters it with 256 kernels of size 5 × 5 × 48."
+              "page": 3,
+              "section": "3. Approach",
+              "quote": "Given an input image c ∈ RH×W ×3, our goal is to estimate the corresponding point map x ∈ RH×W ×3, in which each pixel encodes its 3D spatial (X, Y , Z) coordinates.",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
             }
           ],
           "notes": null
         },
         {
-          "name": "num_kernels",
-          "value": "256",
+          "name": "patch_size",
+          "value": 16,
+          "typed_value": {
+            "value_type": "INTEGER",
+            "raw": 16,
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "HYPERPARAMETER",
           "status": "PAPER_REPORTED",
+          "required": false,
           "confidence": 1.0,
           "evidence": [
             {
-              "page": 5,
-              "section": null,
-              "quote": "The second convolutional layer takes as input the (response-normalized and pooled) output of the ﬁrst convolutional layer and ﬁlters it with 256 kernels of size 5 × 5 × 48."
-            }
-          ],
-          "notes": null
-        }
-      ]
-    },
-    {
-      "name": "Convolutional Layer 3",
-      "component_type": "Convolutional",
-      "facts": [
-        {
-          "name": "kernel_size",
-          "value": "3",
-          "status": "PAPER_REPORTED",
-          "confidence": 1.0,
-          "evidence": [
+              "page": 4,
+              "section": "3.2. Architecture",
+              "quote": "We use the same patch size p = 16 and embedding dimension D for both the point map and DINOv3 branches.",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
+            },
             {
-              "page": 5,
-              "section": null,
-              "quote": "The third convolutional layer has 384 kernels of size 3 × 3 × 256 connected to the (normalized, pooled) outputs of the second convolutional layer."
-            }
-          ],
-          "notes": null
-        },
-        {
-          "name": "num_kernels",
-          "value": "384",
-          "status": "PAPER_REPORTED",
-          "confidence": 1.0,
-          "evidence": [
-            {
-              "page": 5,
-              "section": null,
-              "quote": "The third convolutional layer has 384 kernels of size 3 × 3 × 256 connected to the (normalized, pooled) outputs of the second convolutional layer."
-            }
-          ],
-          "notes": null
-        }
-      ]
-    },
-    {
-      "name": "Convolutional Layer 4",
-      "component_type": "Convolutional",
-      "facts": [
-        {
-          "name": "kernel_size",
-          "value": "3",
-          "status": "PAPER_REPORTED",
-          "confidence": 1.0,
-          "evidence": [
-            {
-              "page": 5,
-              "section": null,
-              "quote": "The fourth convolutional layer has 384 kernels of size 3 × 3 × 192"
+              "page": 10,
+              "section": "5. Conclusion",
+              "quote": "Comparing patch sizes 16 and 32, we find that 16 yields better overall results and sharper boundaries.",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
             }
           ],
           "notes": null
         },
         {
-          "name": "num_kernels",
-          "value": "384",
+          "name": "embedding_dimension",
+          "value": "D",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "D",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "HYPERPARAMETER",
           "status": "PAPER_REPORTED",
+          "required": true,
           "confidence": 1.0,
           "evidence": [
             {
-              "page": 5,
-              "section": null,
-              "quote": "The fourth convolutional layer has 384 kernels of size 3 × 3 × 192"
-            }
-          ],
-          "notes": null
-        }
-      ]
-    },
-    {
-      "name": "Convolutional Layer 5",
-      "component_type": "Convolutional",
-      "facts": [
-        {
-          "name": "kernel_size",
-          "value": "3",
-          "status": "PAPER_REPORTED",
-          "confidence": 1.0,
-          "evidence": [
-            {
-              "page": 5,
-              "section": null,
-              "quote": "The ﬁfth convolutional layer has 256 kernels of size 3 × 3 × 192"
+              "page": 4,
+              "section": "3.2. Architecture",
+              "quote": "We use the same patch size p = 16 and embedding dimension D for both the point map and DINOv3 branches.",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
             }
           ],
           "notes": null
         },
         {
-          "name": "num_kernels",
-          "value": "256",
+          "name": "normalization",
+          "value": "standardize point maps",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "standardize point maps",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "PREPROCESSING",
           "status": "PAPER_REPORTED",
+          "required": false,
           "confidence": 1.0,
           "evidence": [
             {
-              "page": 5,
-              "section": null,
-              "quote": "The ﬁfth convolutional layer has 256 kernels of size 3 × 3 × 192"
+              "page": 4,
+              "section": "3.2. Architecture",
+              "quote": "We standardize the point maps before training. For each point map, we compute the centroid µ and a scalar scale factor s, defined as the mean Euclidean distance of the points from the centroid.",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
             }
           ],
           "notes": null
         }
-      ]
+      ],
+      "evidence": [],
+      "notes": null
+    }
+  ],
+  "architecture": {
+    "nodes": [
+      {
+        "id": "pointdit",
+        "type": "Diffusion Transformer",
+        "name": "PointDiT",
+        "inputs": [],
+        "outputs": [],
+        "facts": [
+          {
+            "name": "model_architecture",
+            "value": "Vision Transformer (ViT)",
+            "typed_value": {
+              "value_type": "STRING",
+              "raw": "Vision Transformer (ViT)",
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "ARCHITECTURE",
+            "status": "PAPER_REPORTED",
+            "required": true,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 1,
+                "section": "Introduction",
+                "quote": "We introduce a minimalist pixel-space Diffusion Transformer, built on a plain ViT, that operates directly on raw 3D point map patches and is conditioned on image tokens from a pre-trained DINOv3.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "name": "input_shape",
+            "value": "[H, W, 3]",
+            "typed_value": {
+              "value_type": "STRING",
+              "raw": "[H, W, 3]",
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "SHAPE",
+            "status": "PAPER_REPORTED",
+            "required": true,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 3,
+                "section": "3. Approach",
+                "quote": "Given an input image c ∈ RH×W ×3, our goal is to estimate the corresponding point map x ∈ RH×W ×3, in which each pixel encodes its 3D spatial (X, Y , Z) coordinates.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "name": "patch_size",
+            "value": 16,
+            "typed_value": {
+              "value_type": "INTEGER",
+              "raw": 16,
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "HYPERPARAMETER",
+            "status": "PAPER_REPORTED",
+            "required": false,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 4,
+                "section": "3.2. Architecture",
+                "quote": "We use the same patch size p = 16 and embedding dimension D for both the point map and DINOv3 branches.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              },
+              {
+                "page": 10,
+                "section": "5. Conclusion",
+                "quote": "Comparing patch sizes 16 and 32, we find that 16 yields better overall results and sharper boundaries.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "name": "embedding_dimension",
+            "value": "D",
+            "typed_value": {
+              "value_type": "STRING",
+              "raw": "D",
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "HYPERPARAMETER",
+            "status": "PAPER_REPORTED",
+            "required": true,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 4,
+                "section": "3.2. Architecture",
+                "quote": "We use the same patch size p = 16 and embedding dimension D for both the point map and DINOv3 branches.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "name": "normalization",
+            "value": "standardize point maps",
+            "typed_value": {
+              "value_type": "STRING",
+              "raw": "standardize point maps",
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "PREPROCESSING",
+            "status": "PAPER_REPORTED",
+            "required": false,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 4,
+                "section": "3.2. Architecture",
+                "quote": "We standardize the point maps before training. For each point map, we compute the centroid µ and a scalar scale factor s, defined as the mean Euclidean distance of the points from the centroid.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          }
+        ],
+        "notes": null
+      }
+    ],
+    "edges": [
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "patchify",
+        "to": "linear_embedding"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "linear_embedding",
+        "to": "transformer_block"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "transformer_block",
+        "to": "unpatchify"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "patchify",
+        "to": "linear_embedding"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "linear_embedding",
+        "to": "transformer_block"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "transformer_block",
+        "to": "unpatchify"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "patchify",
+        "to": "linear_embedding"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "linear_embedding",
+        "to": "transformer_block"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "transformer_block",
+        "to": "unpatchify"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "patchify",
+        "to": "linear_embedding"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "linear_embedding",
+        "to": "transformer_block"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "transformer_block",
+        "to": "unpatchify"
+      }
+    ],
+    "inputs": [
+      "input_image"
+    ],
+    "outputs": [
+      "point_map"
+    ],
+    "tensors": [],
+    "operations": [
+      {
+        "id": "patchify",
+        "name": "patchify",
+        "operation_type": "PATCHIFY",
+        "step": null,
+        "operation": "patchify",
+        "input": "input_image",
+        "output": "patchified_image",
+        "inputs": [
+          "input_image"
+        ],
+        "outputs": [
+          "patchified_image"
+        ],
+        "parameters": {},
+        "repeat_count": null,
+        "order": null,
+        "facts": [],
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "linear_embedding",
+        "name": "linear_embedding",
+        "operation_type": "LINEAR",
+        "step": null,
+        "operation": "linear_embedding",
+        "input": "patchified_image",
+        "output": "embedded_image",
+        "inputs": [
+          "patchified_image"
+        ],
+        "outputs": [
+          "embedded_image"
+        ],
+        "parameters": {},
+        "repeat_count": null,
+        "order": null,
+        "facts": [],
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "transformer_block",
+        "name": "transformer_block",
+        "operation_type": "UNKNOWN",
+        "step": null,
+        "operation": "transformer_block",
+        "input": "embedded_image",
+        "output": "transformed_image",
+        "inputs": [
+          "embedded_image"
+        ],
+        "outputs": [
+          "transformed_image"
+        ],
+        "parameters": {},
+        "repeat_count": null,
+        "order": null,
+        "facts": [],
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "unpatchify",
+        "name": "unpatchify",
+        "operation_type": "UNPATCHIFY",
+        "step": null,
+        "operation": "unpatchify",
+        "input": "transformed_image",
+        "output": "point_map",
+        "inputs": [
+          "transformed_image"
+        ],
+        "outputs": [
+          "point_map"
+        ],
+        "parameters": {},
+        "repeat_count": null,
+        "order": null,
+        "facts": [],
+        "evidence": [],
+        "notes": null
+      }
+    ],
+    "connections": [
+      {
+        "source": "patchify",
+        "target": "linear_embedding",
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "order": null,
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "source": "linear_embedding",
+        "target": "transformer_block",
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "order": null,
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "source": "transformer_block",
+        "target": "unpatchify",
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "order": null,
+        "evidence": [],
+        "notes": null
+      }
+    ],
+    "forward_pass": [
+      {
+        "step": 1,
+        "operation": "patchify",
+        "input": "input_image",
+        "output": "patchified_image",
+        "notes": null
+      },
+      {
+        "step": 2,
+        "operation": "linear_embedding",
+        "input": "patchified_image",
+        "output": "embedded_image",
+        "notes": null
+      },
+      {
+        "step": 3,
+        "operation": "transformer_block",
+        "input": "embedded_image",
+        "output": "transformed_image",
+        "notes": null
+      },
+      {
+        "step": 4,
+        "operation": "unpatchify",
+        "input": "transformed_image",
+        "output": "point_map",
+        "notes": null
+      }
+    ],
+    "tensor_flow": "input_image -> patchify -> patchified_image -> linear_embedding -> embedded_image -> transformer_block -> transformed_image -> unpatchify -> point_map",
+    "notes": null
+  },
+  "architecture_graph": {
+    "nodes": [
+      {
+        "id": "pointdit",
+        "type": "Diffusion Transformer",
+        "name": "PointDiT",
+        "inputs": [],
+        "outputs": [],
+        "facts": [
+          {
+            "name": "model_architecture",
+            "value": "Vision Transformer (ViT)",
+            "typed_value": {
+              "value_type": "STRING",
+              "raw": "Vision Transformer (ViT)",
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "ARCHITECTURE",
+            "status": "PAPER_REPORTED",
+            "required": true,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 1,
+                "section": "Introduction",
+                "quote": "We introduce a minimalist pixel-space Diffusion Transformer, built on a plain ViT, that operates directly on raw 3D point map patches and is conditioned on image tokens from a pre-trained DINOv3.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "name": "input_shape",
+            "value": "[H, W, 3]",
+            "typed_value": {
+              "value_type": "STRING",
+              "raw": "[H, W, 3]",
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "SHAPE",
+            "status": "PAPER_REPORTED",
+            "required": true,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 3,
+                "section": "3. Approach",
+                "quote": "Given an input image c ∈ RH×W ×3, our goal is to estimate the corresponding point map x ∈ RH×W ×3, in which each pixel encodes its 3D spatial (X, Y , Z) coordinates.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "name": "patch_size",
+            "value": 16,
+            "typed_value": {
+              "value_type": "INTEGER",
+              "raw": 16,
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "HYPERPARAMETER",
+            "status": "PAPER_REPORTED",
+            "required": false,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 4,
+                "section": "3.2. Architecture",
+                "quote": "We use the same patch size p = 16 and embedding dimension D for both the point map and DINOv3 branches.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              },
+              {
+                "page": 10,
+                "section": "5. Conclusion",
+                "quote": "Comparing patch sizes 16 and 32, we find that 16 yields better overall results and sharper boundaries.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "name": "embedding_dimension",
+            "value": "D",
+            "typed_value": {
+              "value_type": "STRING",
+              "raw": "D",
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "HYPERPARAMETER",
+            "status": "PAPER_REPORTED",
+            "required": true,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 4,
+                "section": "3.2. Architecture",
+                "quote": "We use the same patch size p = 16 and embedding dimension D for both the point map and DINOv3 branches.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          },
+          {
+            "name": "normalization",
+            "value": "standardize point maps",
+            "typed_value": {
+              "value_type": "STRING",
+              "raw": "standardize point maps",
+              "shape": null,
+              "range": null,
+              "formula": null,
+              "unit": null
+            },
+            "category": "PREPROCESSING",
+            "status": "PAPER_REPORTED",
+            "required": false,
+            "confidence": 1.0,
+            "evidence": [
+              {
+                "page": 4,
+                "section": "3.2. Architecture",
+                "quote": "We standardize the point maps before training. For each point map, we compute the centroid µ and a scalar scale factor s, defined as the mean Euclidean distance of the points from the centroid.",
+                "evidence_type": "DIRECT_QUOTE",
+                "support_strength": "DIRECT",
+                "source_label": null,
+                "notes": null
+              }
+            ],
+            "notes": null
+          }
+        ],
+        "notes": null
+      }
+    ],
+    "edges": [
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "patchify",
+        "to": "linear_embedding"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "linear_embedding",
+        "to": "transformer_block"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "transformer_block",
+        "to": "unpatchify"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "patchify",
+        "to": "linear_embedding"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "linear_embedding",
+        "to": "transformer_block"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "transformer_block",
+        "to": "unpatchify"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "patchify",
+        "to": "linear_embedding"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "linear_embedding",
+        "to": "transformer_block"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "transformer_block",
+        "to": "unpatchify"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "patchify",
+        "to": "linear_embedding"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "linear_embedding",
+        "to": "transformer_block"
+      },
+      {
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "notes": null,
+        "from": "transformer_block",
+        "to": "unpatchify"
+      }
+    ],
+    "inputs": [
+      "input_image"
+    ],
+    "outputs": [
+      "point_map"
+    ],
+    "tensors": [],
+    "operations": [
+      {
+        "id": "patchify",
+        "name": "patchify",
+        "operation_type": "PATCHIFY",
+        "step": null,
+        "operation": "patchify",
+        "input": "input_image",
+        "output": "patchified_image",
+        "inputs": [
+          "input_image"
+        ],
+        "outputs": [
+          "patchified_image"
+        ],
+        "parameters": {},
+        "repeat_count": null,
+        "order": null,
+        "facts": [],
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "linear_embedding",
+        "name": "linear_embedding",
+        "operation_type": "LINEAR",
+        "step": null,
+        "operation": "linear_embedding",
+        "input": "patchified_image",
+        "output": "embedded_image",
+        "inputs": [
+          "patchified_image"
+        ],
+        "outputs": [
+          "embedded_image"
+        ],
+        "parameters": {},
+        "repeat_count": null,
+        "order": null,
+        "facts": [],
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "transformer_block",
+        "name": "transformer_block",
+        "operation_type": "UNKNOWN",
+        "step": null,
+        "operation": "transformer_block",
+        "input": "embedded_image",
+        "output": "transformed_image",
+        "inputs": [
+          "embedded_image"
+        ],
+        "outputs": [
+          "transformed_image"
+        ],
+        "parameters": {},
+        "repeat_count": null,
+        "order": null,
+        "facts": [],
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "unpatchify",
+        "name": "unpatchify",
+        "operation_type": "UNPATCHIFY",
+        "step": null,
+        "operation": "unpatchify",
+        "input": "transformed_image",
+        "output": "point_map",
+        "inputs": [
+          "transformed_image"
+        ],
+        "outputs": [
+          "point_map"
+        ],
+        "parameters": {},
+        "repeat_count": null,
+        "order": null,
+        "facts": [],
+        "evidence": [],
+        "notes": null
+      }
+    ],
+    "connections": [
+      {
+        "source": "patchify",
+        "target": "linear_embedding",
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "order": null,
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "source": "linear_embedding",
+        "target": "transformer_block",
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "order": null,
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "source": "transformer_block",
+        "target": "unpatchify",
+        "connection_type": "SEQUENTIAL",
+        "tensor": null,
+        "order": null,
+        "evidence": [],
+        "notes": null
+      }
+    ],
+    "forward_pass": [
+      {
+        "step": 1,
+        "operation": "patchify",
+        "input": "input_image",
+        "output": "patchified_image",
+        "notes": null
+      },
+      {
+        "step": 2,
+        "operation": "linear_embedding",
+        "input": "patchified_image",
+        "output": "embedded_image",
+        "notes": null
+      },
+      {
+        "step": 3,
+        "operation": "transformer_block",
+        "input": "embedded_image",
+        "output": "transformed_image",
+        "notes": null
+      },
+      {
+        "step": 4,
+        "operation": "unpatchify",
+        "input": "transformed_image",
+        "output": "point_map",
+        "notes": null
+      }
+    ],
+    "tensor_flow": "input_image -> patchify -> patchified_image -> linear_embedding -> embedded_image -> transformer_block -> transformed_image -> unpatchify -> point_map",
+    "notes": null
+  },
+  "forward_pass": [
+    {
+      "step": 1,
+      "operation": "patchify",
+      "input": "input_image",
+      "output": "patchified_image",
+      "notes": null
     },
     {
-      "name": "Fully Connected Layer 1",
-      "component_type": "Fully Connected",
-      "facts": [
-        {
-          "name": "num_neurons",
-          "value": "4096",
-          "status": "PAPER_REPORTED",
-          "confidence": 1.0,
-          "evidence": [
-            {
-              "page": 5,
-              "section": null,
-              "quote": "The fully-connected layers have 4096 neurons each."
-            }
-          ],
-          "notes": null
-        }
-      ]
+      "step": 2,
+      "operation": "linear_embedding",
+      "input": "patchified_image",
+      "output": "embedded_image",
+      "notes": null
     },
     {
-      "name": "Fully Connected Layer 2",
-      "component_type": "Fully Connected",
+      "step": 3,
+      "operation": "transformer_block",
+      "input": "embedded_image",
+      "output": "transformed_image",
+      "notes": null
+    },
+    {
+      "step": 4,
+      "operation": "unpatchify",
+      "input": "transformed_image",
+      "output": "point_map",
+      "notes": null
+    }
+  ],
+  "tensor_flow": "input_image -> patchify -> patchified_image -> linear_embedding -> embedded_image -> transformer_block -> transformed_image -> unpatchify -> point_map",
+  "equations": [
+    {
+      "operation": "attention",
+      "formula": "softmax(QK^T / sqrt(d_k)) V",
+      "code_expression": null,
+      "description": null
+    },
+    {
+      "operation": "layer_norm",
+      "formula": "(x - mean) / sqrt(var + eps) * gamma + beta",
+      "code_expression": null,
+      "description": null
+    }
+  ],
+  "variants": [
+    {
+      "id": "PointDiT-B",
+      "name": "PointDiT-Base",
+      "base_model": "PointDiT",
+      "component_ids": [
+        "PointDiT"
+      ],
       "facts": [
         {
-          "name": "num_neurons",
-          "value": "4096",
+          "name": "variant",
+          "value": "Base",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "Base",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "VARIANT",
           "status": "PAPER_REPORTED",
+          "required": false,
           "confidence": 1.0,
           "evidence": [
             {
-              "page": 5,
-              "section": null,
-              "quote": "The fully-connected layers have 4096 neurons each."
+              "page": 6,
+              "section": "4.2. Implementation Details",
+              "quote": "We implement three scale variants of our architecture: PointDiT-B (Base), PointDiT-L (Large), and PointDiT-H (Huge), following the configurations of JiT (Li & He, 2026).",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
             }
           ],
           "notes": null
         }
-      ]
+      ],
+      "evidence": [
+        {
+          "page": 6,
+          "section": "4.2. Implementation Details",
+          "quote": "We implement three scale variants of our architecture: PointDiT-B (Base), PointDiT-L (Large), and PointDiT-H (Huge), following the configurations of JiT (Li & He, 2026).",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "id": "PointDiT-L",
+      "name": "PointDiT-Large",
+      "base_model": "PointDiT",
+      "component_ids": [
+        "PointDiT"
+      ],
+      "facts": [
+        {
+          "name": "variant",
+          "value": "Large",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "Large",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "VARIANT",
+          "status": "PAPER_REPORTED",
+          "required": false,
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 6,
+              "section": "4.2. Implementation Details",
+              "quote": "We implement three scale variants of our architecture: PointDiT-B (Base), PointDiT-L (Large), and PointDiT-H (Huge), following the configurations of JiT (Li & He, 2026).",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
+            }
+          ],
+          "notes": null
+        }
+      ],
+      "evidence": [
+        {
+          "page": 6,
+          "section": "4.2. Implementation Details",
+          "quote": "We implement three scale variants of our architecture: PointDiT-B (Base), PointDiT-L (Large), and PointDiT-H (Huge), following the configurations of JiT (Li & He, 2026).",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "id": "PointDiT-H",
+      "name": "PointDiT-Huge",
+      "base_model": "PointDiT",
+      "component_ids": [
+        "PointDiT"
+      ],
+      "facts": [
+        {
+          "name": "variant",
+          "value": "Huge",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "Huge",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "VARIANT",
+          "status": "PAPER_REPORTED",
+          "required": false,
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 6,
+              "section": "4.2. Implementation Details",
+              "quote": "We implement three scale variants of our architecture: PointDiT-B (Base), PointDiT-L (Large), and PointDiT-H (Huge), following the configurations of JiT (Li & He, 2026).",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
+            }
+          ],
+          "notes": null
+        }
+      ],
+      "evidence": [
+        {
+          "page": 6,
+          "section": "4.2. Implementation Details",
+          "quote": "We implement three scale variants of our architecture: PointDiT-B (Base), PointDiT-L (Large), and PointDiT-H (Huge), following the configurations of JiT (Li & He, 2026).",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
+        }
+      ],
+      "notes": null
     }
   ],
   "preprocessing": [
     {
-      "name": "Data Augmentation",
-      "value": "Image translations and horizontal reflections, altering RGB channel intensities",
+      "name": "rescaling",
+      "value": "shorter side matches the target resolution",
+      "typed_value": {
+        "value_type": "STRING",
+        "raw": "shorter side matches the target resolution",
+        "shape": null,
+        "range": null,
+        "formula": null,
+        "unit": null
+      },
+      "category": "PREPROCESSING",
       "status": "PAPER_REPORTED",
+      "required": false,
       "confidence": 1.0,
       "evidence": [
         {
-          "page": 5,
-          "section": null,
-          "quote": "We employ two distinct forms of data augmentation, both of which allow transformed images to be produced from the original images with very little computation"
+          "page": 7,
+          "section": "4.4. Evaluation Results",
+          "quote": "each input image is rescaled so that its shorter side matches the target resolution",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "cropping",
+      "value": "center-cropped to the square input required by the model",
+      "typed_value": {
+        "value_type": "STRING",
+        "raw": "center-cropped to the square input required by the model",
+        "shape": null,
+        "range": null,
+        "formula": null,
+        "unit": null
+      },
+      "category": "PREPROCESSING",
+      "status": "PAPER_REPORTED",
+      "required": false,
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "page": 7,
+          "section": "4.4. Evaluation Results",
+          "quote": "and then center-cropped to the square input required by the model",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "data_augmentation",
+      "value": "geometric and photometric operations",
+      "typed_value": {
+        "value_type": "STRING",
+        "raw": "geometric and photometric operations",
+        "shape": null,
+        "range": null,
+        "formula": null,
+        "unit": null
+      },
+      "category": "PREPROCESSING",
+      "status": "PAPER_REPORTED",
+      "required": false,
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "page": 13,
+          "section": "A.3. Training Details",
+          "quote": "Data Augmentation. We apply two groups of augmentations: geometric operations, applied jointly to the image and the point map (with intrinsics updated accordingly), and photometric operations, applied to the image only.",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
         }
       ],
       "notes": null
@@ -231,70 +1260,275 @@
   ],
   "training": [
     {
-      "name": "Batch Size",
-      "value": "128",
+      "name": "resolution",
+      "value": "[256, 256]",
+      "typed_value": {
+        "value_type": "STRING",
+        "raw": "[256, 256]",
+        "shape": null,
+        "range": null,
+        "formula": null,
+        "unit": null
+      },
+      "category": "UNKNOWN",
       "status": "PAPER_REPORTED",
+      "required": false,
       "confidence": 1.0,
       "evidence": [
         {
-          "page": 6,
-          "section": null,
-          "quote": "We trained our models using stochastic gradient descent with a batch size of 128 examples"
+          "page": 7,
+          "section": "4.4. Evaluation Results",
+          "quote": "We evaluate at both 256 × 256 and 512 × 512 resolutions.",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
         }
       ],
       "notes": null
     },
     {
-      "name": "Momentum",
-      "value": "0.9",
+      "name": "resolution",
+      "value": "[512, 512]",
+      "typed_value": {
+        "value_type": "STRING",
+        "raw": "[512, 512]",
+        "shape": null,
+        "range": null,
+        "formula": null,
+        "unit": null
+      },
+      "category": "UNKNOWN",
       "status": "PAPER_REPORTED",
+      "required": false,
       "confidence": 1.0,
       "evidence": [
         {
-          "page": 6,
-          "section": null,
-          "quote": "We trained our models using stochastic gradient descent with a batch size of 128 examples, momentum of 0.9"
+          "page": 7,
+          "section": "4.4. Evaluation Results",
+          "quote": "We evaluate at both 256 × 256 and 512 × 512 resolutions.",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
         }
       ],
       "notes": null
     },
     {
-      "name": "Weight Decay",
-      "value": "0.0005",
+      "name": "optimizer",
+      "value": "AdamW",
+      "typed_value": {
+        "value_type": "STRING",
+        "raw": "AdamW",
+        "shape": null,
+        "range": null,
+        "formula": null,
+        "unit": null
+      },
+      "category": "UNKNOWN",
       "status": "PAPER_REPORTED",
+      "required": false,
       "confidence": 1.0,
       "evidence": [
         {
-          "page": 6,
-          "section": null,
-          "quote": "We trained our models using stochastic gradient descent with a batch size of 128 examples, momentum of 0.9, and weight decay of 0.0005"
-        }
-      ],
-      "notes": null
-    },
-    {
-      "name": "Learning Rate",
-      "value": "0.01",
-      "status": "PAPER_REPORTED",
-      "confidence": 1.0,
-      "evidence": [
-        {
-          "page": 6,
-          "section": null,
-          "quote": "The learning rate was initialized at 0.01 and reduced three times prior to termination"
+          "page": 13,
+          "section": "A.3. Training Details",
+          "quote": "Optimization. Both stages use AdamW (β1=0.9, β2=0.95, weight decay 0) in bf16 mixed precision, the linear learning-rate scaling rule lr = blr·(global batch)/256, no gradient clipping or accumulation, and two exponential moving averages of the weights (decays 0.9999 and 0.9996); the 0.9999 EMA is used for all evaluations.",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
         }
       ],
       "notes": null
     }
   ],
-  "unknowns": [
+  "training_stages": [
     {
-      "name": "model architecture",
-      "value": null,
-      "status": "UNKNOWN",
-      "confidence": 0.5,
-      "evidence": [],
-      "notes": "No information about model architecture is provided in this chunk."
+      "id": "pre-training",
+      "name": "Pre-training",
+      "order": 1,
+      "resolution": {
+        "dimensions": [],
+        "layout": null,
+        "semantic": null,
+        "notes": null
+      },
+      "epochs": 30,
+      "optimizer": "AdamW",
+      "base_learning_rate": null,
+      "effective_learning_rate": null,
+      "learning_rate_scaling_rule": null,
+      "batch_size": null,
+      "datasets": [
+        "SceneNet-RGBD"
+      ],
+      "facts": [
+        {
+          "name": "pre-training_resolution",
+          "value": "256x256",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "256x256",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "TRAINING",
+          "status": "PAPER_REPORTED",
+          "required": false,
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 6,
+              "section": "4.2. Implementation Details",
+              "quote": "We use the AdamW optimizer (Loshchilov & Hutter, 2019), with a learning rate schedule and hyperparameters consistent with JiT (Li & He, 2026).",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
+            }
+          ],
+          "notes": null
+        }
+      ],
+      "evidence": [
+        {
+          "page": 6,
+          "section": "4.2. Implementation Details",
+          "quote": "We use the AdamW optimizer (Loshchilov & Hutter, 2019), with a learning rate schedule and hyperparameters consistent with JiT (Li & He, 2026).",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
+        }
+      ],
+      "notes": null
+    },
+    {
+      "id": "fine-tuning",
+      "name": "Fine-tuning",
+      "order": 2,
+      "resolution": {
+        "dimensions": [],
+        "layout": null,
+        "semantic": null,
+        "notes": null
+      },
+      "epochs": null,
+      "optimizer": "AdamW",
+      "base_learning_rate": null,
+      "effective_learning_rate": null,
+      "learning_rate_scaling_rule": null,
+      "batch_size": null,
+      "datasets": [
+        "Hypersim",
+        "VKITTI2",
+        "UrbanSyn",
+        "Synscapes",
+        "TartanAir",
+        "OmniWorldGame",
+        "EDEN",
+        "IRS",
+        "Dynamic Replica",
+        "MVSSynth",
+        "TartanGround"
+      ],
+      "facts": [
+        {
+          "name": "fine-tuning_resolution",
+          "value": "512x512",
+          "typed_value": {
+            "value_type": "STRING",
+            "raw": "512x512",
+            "shape": null,
+            "range": null,
+            "formula": null,
+            "unit": null
+          },
+          "category": "TRAINING",
+          "status": "PAPER_REPORTED",
+          "required": false,
+          "confidence": 1.0,
+          "evidence": [
+            {
+              "page": 6,
+              "section": "4.2. Implementation Details",
+              "quote": "We use the AdamW optimizer (Loshchilov & Hutter, 2019), with a learning rate schedule and hyperparameters consistent with JiT (Li & He, 2026).",
+              "evidence_type": "DIRECT_QUOTE",
+              "support_strength": "DIRECT",
+              "source_label": null,
+              "notes": null
+            }
+          ],
+          "notes": null
+        }
+      ],
+      "evidence": [
+        {
+          "page": 6,
+          "section": "4.2. Implementation Details",
+          "quote": "We use the AdamW optimizer (Loshchilov & Hutter, 2019), with a learning rate schedule and hyperparameters consistent with JiT (Li & He, 2026).",
+          "evidence_type": "DIRECT_QUOTE",
+          "support_strength": "DIRECT",
+          "source_label": null,
+          "notes": null
+        }
+      ],
+      "notes": null
     }
-  ]
+  ],
+  "inference": {
+    "sampler": null,
+    "solver": null,
+    "step_counts": [],
+    "initialization": [],
+    "facts": [
+      {
+        "name": "inference_resolution",
+        "value": "512x512",
+        "typed_value": {
+          "value_type": "STRING",
+          "raw": "512x512",
+          "shape": null,
+          "range": null,
+          "formula": null,
+          "unit": null
+        },
+        "category": "INFERENCE",
+        "status": "PAPER_REPORTED",
+        "required": false,
+        "confidence": 1.0,
+        "evidence": [
+          {
+            "page": 7,
+            "section": "4.4. Evaluation Results",
+            "quote": "Given the heterogeneous aspect ratios and resolutions of the original test sets, we adopt a standardized preprocessing pipeline: each input image is rescaled so that its shorter side matches the target resolution (256 or 512 pixels) and then center-cropped to the square input required by the model.",
+            "evidence_type": "DIRECT_QUOTE",
+            "support_strength": "DIRECT",
+            "source_label": null,
+            "notes": null
+          }
+        ],
+        "notes": null
+      }
+    ],
+    "evidence": [
+      {
+        "page": 7,
+        "section": "4.4. Evaluation Results",
+        "quote": "Given the heterogeneous aspect ratios and resolutions of the original test sets, we adopt a standardized preprocessing pipeline: each input image is rescaled so that its shorter side matches the target resolution (256 or 512 pixels) and then center-cropped to the square input required by the model.",
+        "evidence_type": "DIRECT_QUOTE",
+        "support_strength": "DIRECT",
+        "source_label": null,
+        "notes": null
+      }
+    ],
+    "notes": null
+  },
+  "unknowns": [],
+  "conflicts": [],
+  "notes": []
 }

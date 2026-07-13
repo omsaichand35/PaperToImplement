@@ -1,6 +1,23 @@
-import os
 import torch
-import logging
+import torch.nn as nn
+import torch.optim as optim
+import torchvision.transforms as transforms
+
+
+def save_checkpoint(state, is_best, checkpoint_dir='.'):
+    checkpoint_path = checkpoint_dir + '/checkpoint.pth.tar'
+    torch.save(state, checkpoint_path)
+    if is_best:
+        shutil.copyfile(checkpoint_path, checkpoint_dir + '/model_best.pth.tar')
+
+
+def load_checkpoint(checkpoint_path, model, optimizer=None):
+    checkpoint = torch.load(checkpoint_path)
+    model.load_state_dict(checkpoint['state_dict'])
+    if optimizer:
+        optimizer.load_state_dict(checkpoint['optimizer'])
+    return checkpoint['epoch'], checkpoint['best_acc1']
+
 
 class AverageMeter(object):
     def __init__(self):
@@ -17,33 +34,3 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
-
-def save_checkpoint(state, is_best, checkpoint_dir='.'):
-    checkpoint_path = os.path.join(checkpoint_dir, 'checkpoint.pth.tar')
-    torch.save(state, checkpoint_path)
-    if is_best:
-        best_path = os.path.join(checkpoint_dir, 'best_model.pth.tar')
-        torch.save(state, best_path)
-
-def load_checkpoint(checkpoint_path, model, optimizer=None):
-    checkpoint = torch.load(checkpoint_path)
-    model.load_state_dict(checkpoint['state_dict'])
-    if optimizer is not None:
-        optimizer.load_state_dict(checkpoint['optimizer'])
-    return checkpoint['epoch'], checkpoint['best_acc1']
-
-class TrainingLogger(object):
-    def __init__(self, log_file):
-        self.log_file = log_file
-        self.logger = logging.getLogger('training_logger')
-        self.logger.setLevel(logging.INFO)
-        self.handler = logging.FileHandler(log_file)
-        self.handler.setLevel(logging.INFO)
-        self.logger.addHandler(self.handler)
-
-    def log(self, message):
-        self.logger.info(message)
-
-    def close(self):
-        self.logger.removeHandler(self.handler)
-        self.handler.close()

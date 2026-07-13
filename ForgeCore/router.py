@@ -211,3 +211,25 @@ def enrich_spec_with_evidence(
             )
 
     return "\n".join(sections)
+
+
+def enrich_spec_dict_with_evidence(
+    spec_dict: dict[str, Any],
+    evidence: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Attach router evidence to the spec dict under a reserved '__evidence__' key.
+    The dict remains fully structured — nothing is flattened to prose.
+    """
+    if (
+        not evidence.get("routed_to_knowledge")
+        and not evidence.get("routed_to_research")
+    ):
+        return spec_dict
+
+    enriched = dict(spec_dict)  # shallow copy — evidence is additive only
+    enriched["__evidence__"] = {
+        "knowledge": evidence.get("knowledge_evidence", []),
+        "research": evidence.get("research_evidence", []),
+    }
+    return enriched

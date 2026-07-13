@@ -42,6 +42,37 @@ async def forge_implementation(
             "max_review_rounds must be at least 1"
         )
 
+    # Refuse to start generation if required fields are unresolved
+    try:
+        import json
+        spec_data = json.loads(spec)
+        unresolved_req = []
+        def _check_facts(fact_list):
+            if not isinstance(fact_list, list):
+                return
+            for f in fact_list:
+                if isinstance(f, dict) and f.get("required") is True:
+                    val = f.get("value")
+                    status = f.get("status")
+                    if val is None or val == "UNKNOWN" or status == "UNKNOWN":
+                        unresolved_req.append(f.get("name", "fact"))
+        _check_facts(spec_data.get("preprocessing"))
+        _check_facts(spec_data.get("training"))
+        _check_facts(spec_data.get("unknowns"))
+        inf = spec_data.get("inference")
+        if isinstance(inf, dict):
+            _check_facts(inf.get("facts"))
+        for comp in spec_data.get("model_components", []):
+            if isinstance(comp, dict):
+                _check_facts(comp.get("facts"))
+        if unresolved_req:
+            names = sorted(set(unresolved_req))
+            raise ValueError(
+                f"Generation refused to start: unresolved required facts: {names}"
+            )
+    except (json.JSONDecodeError, TypeError, AttributeError):
+        pass
+
     # ---------------------------------
     # 1. Create and validate plan
     # ---------------------------------

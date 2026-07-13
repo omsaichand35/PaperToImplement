@@ -1,8 +1,11 @@
 import os
 import torch
-import logging
+import torch.nn as nn
+import torch.optim as optim
+
 
 class AverageMeter(object):
+    """Computes and stores the average and current value"""
     def __init__(self):
         self.reset()
 
@@ -20,33 +23,37 @@ class AverageMeter(object):
 
 
 def save_checkpoint(state, is_best, checkpoint_dir='.'):
-    checkpoint_path = os.path.join(checkpoint_dir, 'checkpoint.pth.tar')
-    torch.save(state, checkpoint_path)
+    """Saves a model and training parameters at checkpoint + 'last.pth.tar'.
+    If is_best==True, also saves checkpoint + 'model_best.pth.tar'
+
+    Args:
+        state: (dictionary) contains model's state_dict, may contain other keys such as epoch, optimizer_state_dict
+        is_best: (bool) True if it is the best model seen so far
+        checkpoint_dir: (string) folder where parameters are to be saved
+    """
+    filepath = os.path.join(checkpoint_dir, 'last.pth.tar')
+    if not os.path.exists(checkpoint_dir):
+        print("Checkpoint Directory does not exist! Making directory {}".format(checkpoint_dir))
+        os.mkdir(checkpoint_dir)
+    torch.save(state, filepath)
     if is_best:
-        best_path = os.path.join(checkpoint_dir, 'model_best.pth.tar')
-        torch.save(state, best_path)
+        shutil.copyfile(filepath, os.path.join(checkpoint_dir, 'model_best.pth.tar'))
 
 
 def load_checkpoint(checkpoint_path, model, optimizer=None):
+    """Loads a model and training parameters.
+
+    Args:
+        checkpoint_path: (string) folder where parameters are saved
+        model: torch.nn.Module
+        optimizer: torch.optim
+
+    Returns:
+        model: torch.nn.Module
+        optimizer: torch.optim
+    """
     checkpoint = torch.load(checkpoint_path)
     model.load_state_dict(checkpoint['state_dict'])
-    if optimizer is not None:
+    if optimizer != None:
         optimizer.load_state_dict(checkpoint['optimizer'])
-    return checkpoint
-
-
-class TrainingLogger(object):
-    def __init__(self, log_file):
-        self.log_file = log_file
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        self.handler = logging.FileHandler(log_file)
-        self.handler.setLevel(logging.INFO)
-        self.logger.addHandler(self.handler)
-
-    def log(self, message):
-        self.logger.info(message)
-
-    def close(self):
-        self.logger.removeHandler(self.handler)
-        self.handler.close()
+    return model, optimizer

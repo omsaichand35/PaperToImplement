@@ -4,9 +4,10 @@ from typing import Any
 
 from codeforge.orchestrator import forge_implementation
 from codeforge.implementor import implement_review
-from router import EvidenceRouter, enrich_spec_with_evidence
-from adapters.understanding_adapter import spec_from_understanding
+from router import EvidenceRouter, enrich_spec_with_evidence, enrich_spec_dict_with_evidence
+from adapters.understanding_adapter import spec_from_understanding, spec_dict_from_understanding
 from null_resolver import resolve_null_entities
+import json
 
 
 async def forge_project(
@@ -42,6 +43,7 @@ async def forge_project(
     print(f"\n[ForgeCore] Starting forge_project pipeline...", flush=True)
     understanding_result = None
     resolution_report = None
+    pre_evidence = None
     target_pdf = pdf_path or (spec.strip() if (spec and spec.strip().lower().endswith(".pdf")) else None)
 
     if target_pdf and understanding:
@@ -58,8 +60,19 @@ async def forge_project(
             dataset_name=dataset_name,
             research=research,
         )
-        understanding_result = spec_obj.model_dump() if hasattr(spec_obj, "model_dump") else spec_obj
-        spec = spec_from_understanding(spec_obj)
+        # Lossless path: keep the full ImplementationSpec as a structured dict
+        spec_dict = spec_dict_from_understanding(spec_obj)
+
+        # Attach router evidence as structured keys (not Markdown prose)
+        pre_evidence = EvidenceRouter(
+            knowledge=knowledge,
+            research=research,
+        ).route_pre_execution(spec_dict.get("paper_title") or "")
+        grounded_spec_dict = enrich_spec_dict_with_evidence(spec_dict, pre_evidence)
+
+        # Serialize to JSON string — forge_implementation still receives a str
+        spec = json.dumps(grounded_spec_dict, indent=2, ensure_ascii=False, default=str)
+        understanding_result = spec_dict  # keep for downstream reporting
 
     if not spec or not spec.strip():
         raise ValueError(
@@ -68,7 +81,7 @@ async def forge_project(
     spec = spec.strip()
 
     # ---------------------------------
-    # 1. Intelligent Pre-Execution Routing
+    # 1. Intelligent Pre-Execution Routing (text-spec path, for non-PDF inputs)
     # ---------------------------------
     print("[ForgeCore] Step 1: Running EvidenceRouter pre-execution triage...", flush=True)
     router = EvidenceRouter(
@@ -76,11 +89,13 @@ async def forge_project(
         research=research,
     )
 
-    pre_evidence = router.route_pre_execution(spec)
-    grounded_spec = enrich_spec_with_evidence(
-        spec,
-        pre_evidence
-    )
+    # Only run text-based routing when spec was NOT already enriched above (PDF path)
+    if target_pdf and understanding:
+        # Already enriched as dict; skip duplicate routing
+        grounded_spec = spec
+    else:
+        pre_evidence = router.route_pre_execution(spec)
+        grounded_spec = enrich_spec_with_evidence(spec, pre_evidence)
 
     # ---------------------------------
     # 2. Plan, generate, review, repair

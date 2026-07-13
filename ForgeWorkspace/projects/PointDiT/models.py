@@ -1,71 +1,102 @@
 import torch
 import torch.nn as nn
-import torchvision
+import torch.nn.functional as F
+import torchvision.transforms as transforms
 
-# [Paper Spec Section 3.3] Vision Transformer (ViT)
-class VisionTransformer(nn.Module):
-    def __init__(self, patch_size=16, embedding_dimension=256, num_layers=12):
-        super(VisionTransformer, self).__init__()
+
+class PointMapPatchification(nn.Module):
+    def __init__(self, patch_size=16):
+        super(PointMapPatchification, self).__init__()
         self.patch_size = patch_size
-        self.embedding_dimension = embedding_dimension
-        self.num_layers = num_layers
-        self.vit = torchvision.models.vit_b_16(pretrained=True)
 
-    def forward(self, x):
-        return self.vit(x)
+    def forward(self, x, t):
+        # Implement Point Map Patchification
+        # Assuming x is a tensor of shape (batch_size, height, width, channels)
+        patches = F.unfold(x, kernel_size=(self.patch_size, self.patch_size), stride=(self.patch_size, self.patch_size))
+        return patches
 
-# [Paper Spec Section 3.3] DINOv3 (Pre-trained feature extractor)
+
 class DINOv3(nn.Module):
-    def __init__(self, num_layers_used=4):
+    def __init__(self, embedding_dimension=4):
         super(DINOv3, self).__init__()
-        self.num_layers_used = num_layers_used
-        try:
-            self.dino = torchvision.models.dino_vits16(pretrained=True)
-        except AttributeError:
-            # Provide a local fallback implementation or record the external component as unresolved
-            self.dino = torchvision.models.vit_b_16(pretrained=True)
+        self.embedding_dimension = embedding_dimension
+        self.dino = nn.Sequential(
+            nn.Conv2d(3, embedding_dimension, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Flatten(),
+            nn.Linear(embedding_dimension * 32 * 32, embedding_dimension)
+        )
 
     def forward(self, x):
         return self.dino(x)
 
-# [Paper Spec Section 5] Diffusion Transformer
-class DiffusionTransformer(nn.Module):
-    def __init__(self, input_embedding_dimension=40, output_embedding_dimension=256, num_layers=6):
-        super(DiffusionTransformer, self).__init__()
-        self.input_embedding_dimension = input_embedding_dimension
-        self.output_embedding_dimension = output_embedding_dimension
-        self.num_layers = num_layers
-        self.diffusion_transformer = nn.TransformerEncoderLayer(d_model=input_embedding_dimension, nhead=8, dim_feedforward=256, dropout=0.1)
-        self.diffusion_transformer_layers = nn.ModuleList([self.diffusion_transformer for _ in range(self.num_layers)])
 
-    def forward(self, x, t, noise):
-        for layer in self.diffusion_transformer_layers:
-            x = layer(x)
-        return x
-
-# [Paper Spec Section 5] Linear Prediction Head
-class LinearPredictionHead(nn.Module):
-    def __init__(self, input_dimension=256, output_dimension=3*16*16):
-        super(LinearPredictionHead, self).__init__()
-        self.input_dimension = input_dimension
-        self.output_dimension = output_dimension
-        self.linear_layer = nn.Linear(input_dimension, output_dimension)
+class ImageConditioning(nn.Module):
+    def __init__(self, embedding_dimension=4):
+        super(ImageConditioning, self).__init__()
+        self.embedding_dimension = embedding_dimension
+        self.dino = DINOv3(embedding_dimension=self.embedding_dimension)
 
     def forward(self, x):
-        return self.linear_layer(x)
+        # Implement Image Conditioning
+        # Assuming x is a tensor of shape (batch_size, height, width, channels)
+        return self.dino(x)
 
-# [Paper Spec Section 5] PointDiT Model
+
+class ImageAndPointMapFusion(nn.Module):
+    def __init__(self, concat_axis=1):
+        super(ImageAndPointMapFusion, self).__init__()
+        self.concat_axis = concat_axis
+
+    def forward(self, image_tokens, point_map_tokens):
+        # Implement Image and Point Map Fusion
+        # Assuming image_tokens and point_map_tokens are tensors of shape (batch_size, sequence_length, embedding_dimension)
+        fused_tokens = torch.cat((image_tokens, point_map_tokens), dim=self.concat_axis)
+        return fused_tokens
+
+
+class VisionTransformer(nn.Module):
+    def __init__(self, num_layers=12, hidden_size=768):
+        super(VisionTransformer, self).__init__()
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.transformer = nn.TransformerEncoderLayer(d_model=hidden_size, nhead=8, dim_feedforward=hidden_size, dropout=0.1)
+
+    def forward(self, x, t):
+        # Implement Vision Transformer
+        # Assuming x is a tensor of shape (batch_size, sequence_length, embedding_dimension)
+        # and t is a tensor of shape (batch_size,)
+        return self.transformer(x)
+
+
+class DiffusionTransformer(nn.Module):
+    def __init__(self, num_layers=12, hidden_size=768):
+        super(DiffusionTransformer, self).__init__()
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.transformer = VisionTransformer(num_layers=self.num_layers, hidden_size=self.hidden_size)
+
+    def forward(self, fused_tokens, time_step):
+        # Implement Diffusion Transformer
+        # Assuming fused_tokens is a tensor of shape (batch_size, sequence_length, embedding_dimension)
+        # and time_step is a tensor of shape (batch_size,)
+        return self.transformer(fused_tokens, time_step)
+
+
 class PointDiT(nn.Module):
     def __init__(self):
         super(PointDiT, self).__init__()
-        self.vision_transformer = VisionTransformer()
-        self.dino = DINOv3()
+        self.point_map_patchification = PointMapPatchification()
+        self.image_conditioning = ImageConditioning()
+        self.image_and_point_map_fusion = ImageAndPointMapFusion()
         self.diffusion_transformer = DiffusionTransformer()
-        self.linear_prediction_head = LinearPredictionHead()
 
-    def forward(self, x, t, noise):
-        x = self.vision_transformer(x)
-        x = self.dino(x)
-        x = self.diffusion_transformer(x, t, noise)
-        x = self.linear_prediction_head(x)
-        return x
+    def forward(self, x, t):
+        # Implement PointDiT
+        # Assuming x is a tensor of shape (batch_size, height, width, channels)
+        point_map_tokens = self.point_map_patchification(x, t)
+        image_tokens = self.image_conditioning(x)
+        fused_tokens = self.image_and_point_map_fusion(image_tokens, point_map_tokens)
+        clean_point_map = self.diffusion_transformer(fused_tokens, time_step=t)
+        return clean_point_map
